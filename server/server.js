@@ -17,14 +17,15 @@ app.use(express.static(publicPath));
 io.on("connection", (socket) => {
     console.log("new connection");
 
-    socket.emit("newMessage", {
-        from: "example@gmail.com",
-        text: "Look at some text",
-        createAt: 123
-    });
-
+    // socket.emit will emit message to single connection
     socket.on("createMessage", (message) => {
         console.log("create message", message);
+        // io.emit will send message to all connections
+        io.emit("newMessage", {
+            from: message.from,
+            text: message.text,
+            createdAt: new Date().getTime()
+        });
     });
 
     socket.on("disconnect", () => {

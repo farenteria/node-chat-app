@@ -1,6 +1,14 @@
 let socket = io();
 let locationButton = document.getElementById("send-location");
 
+// will take in mustache template and render a document fragment which will be appended
+// to the message ordered list element
+function appendNewMessage(html){
+    let range = document.createRange();
+    let documentFragment = range.createContextualFragment(html);
+    document.getElementById("messages").appendChild(documentFragment);
+}
+
 socket.on("connect", () => {
    console.log("Connected to server"); 
 });
@@ -10,36 +18,34 @@ socket.on("disconnect", () => {
 });
 
 socket.on("newMessage", (message) => {
-    console.log("New message", message);
+    // set timestamp
+    let formattedTime = moment(message.createdAt).format("h:mm a");
 
-    // create a new <li> element with appropriate contenct
-    let li = document.createElement("li");
-    let content = document.createTextNode(`${message.from}: ${message.text}`);
-    li.appendChild(content);
+    // create a template HTML string
+    let template = document.getElementById("message-template").innerHTML;
+    let html = Mustache.render(template, {
+        text: message.text,
+        from: message.from,
+        createdAt: formattedTime
+    });
 
-    // append created li element to ol
-    let ol = document.getElementById("messages");
-    ol.appendChild(li);
+    appendNewMessage(html);
 });
 
 
 socket.on("newLocationMessage", (message) => {
-    // create a new <li> element with appropriate content
-    let ol = document.getElementById("messages");
-    let li = document.createElement("li");
-    let a = document.createElement("a");
+    // set timestamp
+    let formattedTime = moment(message.createdAt).format("h:mm a");
 
-    let content = document.createTextNode('My current location');
-    a.appendChild(content);
-    a.setAttribute("target", "_blank");
-    a.setAttribute("href", message.url);
+    // create a template HTML string
+    let template = document.getElementById("location-message-template").innerHTML;
+    let html = Mustache.render(template, {
+        url: message.url,
+        from: message.from,
+        createdAt: formattedTime
+    });
 
-    content = document.createTextNode(`${message.from}: `);
-    li.appendChild(content);
-    li.appendChild(a);
-
-    // append created li element to ol
-    ol.appendChild(li);
+    appendNewMessage(html);
 });
 
 // This will handle each user message 

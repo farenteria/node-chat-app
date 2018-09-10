@@ -9,6 +9,21 @@ function appendNewMessage(html){
     document.getElementById("messages").appendChild(documentFragment);
 }
 
+function scrollToBottom(){
+    let messages = document.getElementById("messages");
+    let newMessage = messages.lastElementChild;
+
+    let clientHeight = parseInt(messages.clientHeight);
+    let scrollTop = parseInt(messages.scrollTop);
+    let scrollHeight = parseInt(messages.scrollHeight);
+    let newMessageHeight = parseInt(newMessage.offsetHeight);
+    let lastMessageHeight = parseInt(messages.lastChild.previousElementSibling.offsetHeight);
+
+    if(clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight){
+        messages.scrollTop = scrollHeight;
+    }
+}
+
 socket.on("connect", () => {
    console.log("Connected to server"); 
 });
@@ -30,6 +45,7 @@ socket.on("newMessage", (message) => {
     });
 
     appendNewMessage(html);
+    scrollToBottom();
 });
 
 
@@ -46,6 +62,7 @@ socket.on("newLocationMessage", (message) => {
     });
 
     appendNewMessage(html);
+    scrollToBottom();
 });
 
 // This will handle each user message 

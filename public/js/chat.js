@@ -24,8 +24,35 @@ function scrollToBottom(){
     }
 }
 
+function deparam(uri){
+    if(uri == undefined){
+        uri.window.location.search;
+    }
+
+    let queryString = {};
+
+    uri.replace(
+        new RegExp(
+            "([^?=&]+)(=([^&#]*))?", "g"),
+            function($0, $1, $2, $3) {
+                queryString[$1] = decodeURIComponent($3.replace(/\+/g, '%20'));
+            }
+    );
+
+    return queryString;
+}
+
 socket.on("connect", () => {
-   console.log("Connected to server"); 
+    let params = deparam(window.location.search);
+
+    socket.emit("join", params, (err) => {
+        if(err){
+            alert(err);
+            window.location.href = "/";
+        }else{
+            console.log("No error");
+        }
+    });
 });
 
 socket.on("disconnect", () => {

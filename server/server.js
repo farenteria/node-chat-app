@@ -42,16 +42,28 @@ io.on("connection", (socket) => {
 
     // socket.emit will emit message to single connection
     socket.on("createMessage", (message, callback) => {
-        console.log("create message", message);
+        // socket.id will get id of client who's emiting createMessage
+        let user = users.getUser(socket.id);
 
-        // io.emit will send message to all connections
-        io.emit("newMessage", generateMessage(message.from, message.text));
+        // don't let users send empty messages
+        if(user && isRealString(message.text)){
+            // io.emit will send message to all connections
+            io.to(user.room).emit("newMessage", generateMessage(user.name, message.text));
+        }
+
         callback();
     });
 
     // this will fire when user clicks the send location button
     socket.on("createLocationMessage", (coords) => {
-        io.emit("newLocationMessage", generateLocationMessage("Admin", coords.latitude, coords.longitude));
+        let user = users.getUser(socket.id);
+
+        // ensure that we only send location to room user is in
+        if(user){
+            io
+                .to(user.room)
+                .emit("newLocationMessage", generateLocationMessage(user.name, coords.latitude, coords.longitude));
+        }
     });
 
     // make sure to remove users when they leave the room
